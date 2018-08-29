@@ -80,6 +80,29 @@ function! gtd#results#Set(history_id, formula, results)
 	let l:results = []
 	for l:r in a:results
 		let l:r_data = gtd#note#Read(g:gtd#dir.l:r.'.gtd', 1)[0]
+		let l:r_rest = gtd#note#Read(g:gtd#dir.l:r.'.gtd', 0)[1:]
+		let l:scheduled = ""
+		let l:due = ""
+		for l:line in l:r_rest
+			let l:result = matchlist(
+					\ l:line,
+					\ '^!scheduled-\(.\{-}\)\( \[\*\]\)\?$',
+					\ '\1',
+					\ ''
+					\ )
+			if len(l:result) > 0
+				let l:scheduled = l:result[1] 
+			endif
+			let l:result = matchlist(
+					\ l:line,
+					\ '^!due-\(.\{-}\)\( \[\*\]\)\?$',
+					\ '\1',
+					\ ''
+					\ )
+			if len(l:result) > 0
+				let l:due= l:result[1] 
+			endif
+		endfor
 		let l:results += [
 				\ {
 				\ 'key': l:r,
@@ -89,7 +112,9 @@ function! gtd#results#Set(history_id, formula, results)
 					\ '^=\(.\{-}\)\( \[\*\]\)\?$',
 					\ '\1',
 					\ ''
-					\ )
+					\ ),
+				\ 'scheduled': l:scheduled,
+				\ 'due': l:due
 				\ }
 			\ ]
 	endfor
@@ -150,6 +175,14 @@ function! gtd#results#Display(mods, gtd_id)
 					let l:content += [
 						\ ' '.l:r['key'].' '.l:attached.' '.l:r['title']
 						\ ]
+					if l:r['scheduled'] != ""
+						let l:content[-1] = l:content[-1].
+						  \ ' (Scheduled: '.l:r['scheduled'].')'
+					endif
+					if l:r['due'] != ""
+						let l:content[-1] = l:content[-1].
+						  \ ' [Due: '.l:r['due'].']'
+					endif
 				endfor
 			endif
 			let l:content += [ '' ]
