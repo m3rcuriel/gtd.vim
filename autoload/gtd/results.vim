@@ -103,20 +103,44 @@ function! gtd#results#Set(history_id, formula, results)
 				let l:due= l:result[1] 
 			endif
 		endfor
-		let l:results += [
-				\ {
-				\ 'key': l:r,
-				\ 'attached': match(l:r_data, ' \[\*\]$') == -1 ? 0 : 1,
-				\ 'title': substitute(
-					\ l:r_data,
-					\ '^=\(.\{-}\)\( \[\*\]\)\?$',
-					\ '\1',
-					\ ''
-					\ ),
-				\ 'scheduled': l:scheduled,
-				\ 'due': l:due
-				\ }
-			\ ]
+        if '!waiting' =~ a:formula
+            let l:results += [
+                    \ {
+                    \ 'key': l:r,
+                    \ 'attached': match(l:r_data, ' \[\*\]$') == -1 ? 0 : 1,
+                    \ 'title': substitute(
+                        \ l:r_data,
+                        \ '^=\(.\{-}\)\( \[\*\]\)\?$',
+                        \ '\1',
+                        \ ''
+                        \ ),
+                    \ 'waiting': substitute(
+                        \ l:r_rest[0],
+                        \ '^@\(.\{-}\)\( \[\*\]\)\?$',
+                        \ '\1',
+                        \ ''
+                        \ ),
+                    \ 'scheduled': l:scheduled,
+                    \ 'due': l:due
+                    \ }
+                \ ]
+        else 
+            let l:results += [
+                    \ {
+                    \ 'key': l:r,
+                    \ 'attached': match(l:r_data, ' \[\*\]$') == -1 ? 0 : 1,
+                    \ 'title': substitute(
+                        \ l:r_data,
+                        \ '^=\(.\{-}\)\( \[\*\]\)\?$',
+                        \ '\1',
+                        \ ''
+                        \ ),
+                    \ 'scheduled': l:scheduled,
+                    \ 'due': l:due
+                    \ }
+                \ ]
+        endif
+            
 	endfor
 
 	let s:results_history[a:history_id] += [ {
@@ -172,9 +196,15 @@ function! gtd#results#Display(mods, gtd_id)
 			else
 				for l:r in l:gtd['results']
 					let l:attached = l:r['attached'] ? '[*]' : '[ ]'
-					let l:content += [
-						\ ' '.l:r['key'].' '.l:attached.' '.l:r['title']
-						\ ]
+                    if has_key(l:r, 'waiting')
+                        let l:content += [
+                            \ ' '.l:r['key'].' '.l:attached.' @'.l:r['waiting'].' '.l:r['title']
+                            \ ]
+                    else
+                        let l:content += [
+                            \ ' '.l:r['key'].' '.l:attached.' '.l:r['title']
+                            \ ]
+                    endif
 					if l:r['scheduled'] != ""
 						let l:content[-1] = l:content[-1].
 						  \ ' (Scheduled: '.l:r['scheduled'].')'

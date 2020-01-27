@@ -276,7 +276,7 @@ and wait for the first empty line before leaving the search. >
 		      year, month and day.
 		    - |gtd-content| to look for a |pattern| into your notes.
 		      Eg: /bar
-		    - |gtd-hashtag|. Eg. #meeting or #jean-marc.
+		    - |gtd-hashtag|. Eg. #meeting or #jean-marc
 
 		    After the first character which is a leader allowing to
 		    know what kind of atom you're looking for, atom can
